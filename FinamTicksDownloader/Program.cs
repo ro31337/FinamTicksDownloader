@@ -13,11 +13,23 @@ namespace FinamTicksDownloader
     {
         static void Main(string[] args)
         {
+            if(args.Length != 2)
+            {
+                Console.WriteLine("Usage: FinamTicksDownloader.exe start_date end_date");
+                Console.WriteLine("Example:");
+                Console.WriteLine("\tFinamTicksDownloader.exe 2013.03.12 2013.05.13");
+                Console.WriteLine("\twill download the data since 12 March 2013 till 13 May 2013");
+                return;
+            }
+
             //EmitentHelper.UpdateEmitents();
             //Emitent rts = EmitentHelper.EmitentList.Where(x => x.Name == "RTS").FirstOrDefault();
             //return;
-            DateTime startDate = new DateTime(2013, 03,12);
-            DateTime endDate = new DateTime(2013, 05, 13);
+            
+            DateTime startDate = DateTime.Parse(args[0]);
+            DateTime endDate = DateTime.Parse(args[1]);
+
+            Console.WriteLine("Downloading since " + startDate + " till " + endDate);
 
             DateTime currentDate = startDate;
 
