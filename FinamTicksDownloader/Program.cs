@@ -11,14 +11,43 @@ namespace FinamTicksDownloader
 {
     class Program
     {
+        private static List<Period> GetPeriods()
+        {
+            return new List<Period>
+            {
+                new Period { Name = "ticks", Description = "Tick data", ParameterId = "1", DataFormat = "9", MinimumFileSizeBytes = 5 * 100 * 1024 },
+                new Period { Name = "M1", Description = "1 minute", ParameterId = "2", DataFormat = "5", MinimumFileSizeBytes = 2 * 1024 },
+                new Period { Name = "M5", Description = "5 minutes", ParameterId = "3", DataFormat = "5", MinimumFileSizeBytes = 2 * 1024 }
+            };
+        }
+
+
         static void Main(string[] args)
         {
-            if(args.Length != 2)
+            var periods = GetPeriods();
+            Period period = null;
+
+            if(args.Length != 3)
             {
-                Console.WriteLine("Usage: FinamTicksDownloader.exe start_date end_date");
-                Console.WriteLine("Example:");
-                Console.WriteLine("\tFinamTicksDownloader.exe 2013.03.12 2013.05.13");
-                Console.WriteLine("\twill download the data since 12 March 2013 till 13 May 2013");
+                Console.WriteLine("Usage: FinamTicksDownloader.exe period start_date end_date");
+                Console.WriteLine("Example 1:");
+                Console.WriteLine("\tFinamTicksDownloader.exe ticks 2013.03.12 2013.05.13");
+                Console.WriteLine("\twill download tick data since 12 March 2013 till 13 May 2013");
+                Console.WriteLine("Example 2:");
+                Console.WriteLine("\tFinamTicksDownloader.exe M5 2013.03.12 2013.05.13");
+                Console.WriteLine("\twill download 5 minute tick data since 12 March 2013 till 13 May 2013");
+                Console.WriteLine("Available period names:");
+                foreach(var p in periods)
+                {
+                    Console.WriteLine("\t{0}\t-\t{1}", p.Name, p.Description);
+                }
+                return;
+            }
+
+            period = periods.Where(p => p.Name.ToLower() == args[0].ToLower()).FirstOrDefault();
+            if(period == null)
+            {
+                Console.WriteLine("Period with name " + args[0] + " not found");
                 return;
             }
 
@@ -26,8 +55,8 @@ namespace FinamTicksDownloader
             //Emitent rts = EmitentHelper.EmitentList.Where(x => x.Name == "RTS").FirstOrDefault();
             //return;
             
-            DateTime startDate = DateTime.Parse(args[0]);
-            DateTime endDate = DateTime.Parse(args[1]);
+            DateTime startDate = DateTime.Parse(args[1]);
+            DateTime endDate = DateTime.Parse(args[2]);
 
             Console.WriteLine("Downloading since " + startDate + " till " + endDate);
 
@@ -54,13 +83,15 @@ namespace FinamTicksDownloader
 
                 string url = String.Format(
                     "http://195.128.78.52/SPFB.RTS_{0}_{0}.txt?" +
-                    "market=14&em=17455&code=SPFB.RTS&df={1}&mf={2}&yf={3}&dt={1}&mt={2}&yt={3}&p=1&" +
+                    "market=14&em=17455&code=SPFB.RTS&df={1}&mf={2}&yf={3}&dt={1}&mt={2}&yt={3}&p={4}&" +
                     "f=SPFB.RTS_{0}_{0}&e=.txt&cn=SPFB.RTS&dtf=1&tmf=1&MSOR=0&mstime=on&" +
-                    "mstimever=1&sep=1&sep2=1&datf=9",
+                    "mstimever=1&sep=1&sep2=1&datf={5}",
                     chunk,
                     currentDate.Day,
                     currentDate.Month - 1,
-                    currentDate.Year
+                    currentDate.Year,
+                    period.ParameterId,
+                    period.DataFormat
                     );
 
                 if (File.Exists(fileName))
@@ -82,9 +113,9 @@ namespace FinamTicksDownloader
                         continue;
                     }
 
-                    if (size < 5 * 100 * 1024)
+                    if (size < period.MinimumFileSizeBytes)
                     {
-                        Console.WriteLine("File size less than 500KB, trying again");
+                        Console.WriteLine("File size less than " + period.MinimumFileSizeBytes + " bytes, trying again");
                         if (size > 0 && size < 300)
                         {
                             Console.WriteLine("Message: ");
