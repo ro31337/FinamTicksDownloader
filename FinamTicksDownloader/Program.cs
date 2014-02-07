@@ -27,16 +27,16 @@ namespace FinamTicksDownloader
             var periods = GetPeriods();
             Period period = null;
 
-            if(args.Length != 3)
+            if(args.Length != 4)
             {
-                Console.WriteLine("Usage: FinamTicksDownloader.exe period start_date end_date");
+                Console.WriteLine("Usage: FinamTicksDownloader.exe ticker period start_date end_date");
                 Console.WriteLine("Example 1:");
-                Console.WriteLine("\tFinamTicksDownloader.exe ticks 2013.03.12 2013.05.13");
-                Console.WriteLine("\twill download tick data since 12 March 2013 till 13 May 2013");
+                Console.WriteLine("\tFinamTicksDownloader.exe RTS ticks 2013.03.12 2013.05.13");
+                Console.WriteLine("\twill download RTS tick data since 12 March 2013 till 13 May 2013");
                 Console.WriteLine("Example 2:");
-                Console.WriteLine("\tFinamTicksDownloader.exe M5 2013.03.12 2013.05.13");
-                Console.WriteLine("\twill download 5 minute tick data since 12 March 2013 till 13 May 2013");
-                Console.WriteLine("Available period names:");
+                Console.WriteLine("\tFinamTicksDownloader.exe Si M5 2013.03.12 2013.05.13");
+                Console.WriteLine("\twill download Si 5 minute tick data since 12 March 2013 till 13 May 2013");
+                Console.WriteLine("Available periods:");
                 foreach(var p in periods)
                 {
                     Console.WriteLine("\t{0}\t-\t{1}", p.Name, p.Description);
@@ -44,21 +44,29 @@ namespace FinamTicksDownloader
                 return;
             }
 
-            period = periods.Where(p => p.Name.ToLower() == args[0].ToLower()).FirstOrDefault();
+            period = periods.Where(p => p.Name.ToLower() == args[1].ToLower()).FirstOrDefault();
             if(period == null)
             {
-                Console.WriteLine("Period with name " + args[0] + " not found");
+                Console.WriteLine("Period with name " + args[1] + " not found");
                 return;
             }
 
-            //EmitentHelper.UpdateEmitents();
-            //Emitent rts = EmitentHelper.EmitentList.Where(x => x.Name == "RTS").FirstOrDefault();
-            //return;
-            
-            DateTime startDate = DateTime.Parse(args[1]);
-            DateTime endDate = DateTime.Parse(args[2]);
-
+            DateTime startDate = DateTime.Parse(args[2]);
+            DateTime endDate = DateTime.Parse(args[3]);
             Console.WriteLine("Downloading since " + startDate + " till " + endDate);
+
+            Console.Write("Loading tickers list...");
+            EmitentHelper.UpdateEmitents();
+            Console.WriteLine("OK");
+
+            var ticker = EmitentHelper.EmitentList.Where(x => x.Name == args[0]).FirstOrDefault();
+            if(ticker == null)
+            {
+                Console.WriteLine("Ticker with name " + args[0] + " not found");
+                return;
+            }
+
+            Console.WriteLine("Using ticker " + ticker);
 
             DateTime currentDate = startDate;
 
@@ -71,10 +79,12 @@ namespace FinamTicksDownloader
                 webClient.Headers.Add("Accept-Language", "en-US,en;q=0.9");
                 webClient.Headers.Add("Accept-Encoding", "gzip, deflate"); 
                 
-                string fileName = String.Format("{0:D4}-{1:D2}-{2:D2}.txt",
+                string fileName = String.Format("{3}-{4}-{0:D4}-{1:D2}-{2:D2}.txt",
                     currentDate.Year,
                     currentDate.Month,
-                    currentDate.Day);
+                    currentDate.Day,
+                    ticker.Name,
+                    period.Name);
 
                 string chunk = String.Format("{0:D2}{1:D2}{2:D2}",
                     currentDate.Year % 100,
@@ -82,16 +92,19 @@ namespace FinamTicksDownloader
                     currentDate.Day);
 
                 string url = String.Format(
-                    "http://195.128.78.52/SPFB.RTS_{0}_{0}.txt?" +
-                    "market=14&em=17455&code=SPFB.RTS&df={1}&mf={2}&yf={3}&dt={1}&mt={2}&yt={3}&p={4}&" +
-                    "f=SPFB.RTS_{0}_{0}&e=.txt&cn=SPFB.RTS&dtf=1&tmf=1&MSOR=0&mstime=on&" +
+                    "http://195.128.78.52/{6}_{0}_{0}.txt?" +
+                    "market={8}&em={7}&code={6}&df={1}&mf={2}&yf={3}&dt={1}&mt={2}&yt={3}&p={4}&" +
+                    "f={6}_{0}_{0}&e=.txt&cn={6}&dtf=1&tmf=1&MSOR=0&mstime=on&" +
                     "mstimever=1&sep=1&sep2=1&datf={5}",
                     chunk,
                     currentDate.Day,
                     currentDate.Month - 1,
                     currentDate.Year,
                     period.ParameterId,
-                    period.DataFormat
+                    period.DataFormat,
+                    ticker.Code,
+                    ticker.ID,
+                    ticker.Market
                     );
 
                 if (File.Exists(fileName))

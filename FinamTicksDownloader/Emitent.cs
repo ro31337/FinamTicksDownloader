@@ -12,5 +12,10 @@ namespace FinamTicksDownloader
         public string Name { get; set; }
         public string Code { get; set; }
         public int Market { get; set; }
+
+        public override string ToString()
+        {
+            return "Id: " + ID + ", Name: " + Name + ", Code: " + Code + ", Market: " + Market;
+        }
     }
 }
