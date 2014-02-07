@@ -11,9 +11,29 @@ Description
 Usage
 -----
 
-    FinamTicksDownloader.exe 2013.03.12 2013.05.13
+    FinamTicksDownloader.exe <ticker> <timeframe> <from> <to>
 
-Will download tick data since 12 March 2013 till 13 May 2013.
+Parameters:
+
+* *ticker* - valid stock or futures ticker (RTS, SBRF, Si, etc.)
+* *timeframe* - valid timeframe. Supported timeframes are:
+    * M5 - 5 minute timeframe
+    * M1 - 1 minute timeframe 
+    * ticks - tick data
+* *from* - date to start from
+* *to* - final date
+
+
+Example 1:
+
+    FinamTicksDownloader.exe RTS M5 2013.01.01 2013.12.31
+
+Will download 5 minute candle series for RTS ticker since 1 January till 31 December 2013.
+
+FAQ
+---
+Q: How can I merge all of .txt files into one?
+A: Put a file named "*!all-to-one.bat*" to directory with .txt files. Run the bat-file, output result will be placed to "*!data.txt*". 
 
 Like it?
 --------
