@@ -15,12 +15,11 @@ namespace FinamTicksDownloader
         {
             return new List<Period>
             {
-                new Period { Name = "ticks", Description = "Tick data", ParameterId = "1", DataFormat = "9", MinimumFileSizeBytes = 5 * 100 * 1024 },
-                new Period { Name = "M1", Description = "1 minute", ParameterId = "2", DataFormat = "5", MinimumFileSizeBytes = 500 },
-                new Period { Name = "M5", Description = "5 minutes", ParameterId = "3", DataFormat = "5", MinimumFileSizeBytes = 500 }
+                new Period { Name = "ticks", Description = "Tick data", ParameterId = "1", DataFormat = "9" },
+                new Period { Name = "M1", Description = "1 minute", ParameterId = "2", DataFormat = "5" },
+                new Period { Name = "M5", Description = "5 minutes", ParameterId = "3", DataFormat = "5" }
             };
         }
-
 
         static void Main(string[] args)
         {
@@ -126,9 +125,9 @@ namespace FinamTicksDownloader
                         continue;
                     }
 
-                    if (size < period.MinimumFileSizeBytes)
+                    if (!fileContainsStockData(currentDate, fileName))
                     {
-                        Console.WriteLine("File size less than " + period.MinimumFileSizeBytes + " bytes, trying again");
+                        Console.WriteLine("File doesn't contain stock data, trying again (file size: " + size + " bytes)");
                         if (size > 0 && size < 300)
                         {
                             Console.WriteLine("Message: ");
@@ -148,6 +147,26 @@ namespace FinamTicksDownloader
                 }
                 currentDate = currentDate.AddDays(1);
             }
+        }
+
+        private static bool fileContainsStockData(DateTime currentDate, string filename)
+        {
+            string str = String.Format("{0:D4}{1:D2}{2:D2},",
+                currentDate.Year,
+                currentDate.Month,
+                currentDate.Day);
+
+            using(StreamReader reader = new StreamReader(File.Open(filename, FileMode.Open, FileAccess.Read)))
+            {
+                while(!reader.EndOfStream)
+                {
+                    string line = reader.ReadLine();
+                    if (line.StartsWith(str))
+                        return true;
+                }
+            }
+
+            return false;
         }
     }
 }
