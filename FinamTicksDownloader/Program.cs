@@ -16,8 +16,8 @@ namespace FinamTicksDownloader
             return new List<Period>
             {
                 new Period { Name = "ticks", Description = "Tick data", ParameterId = "1", DataFormat = "9", MinimumFileSizeBytes = 5 * 100 * 1024 },
-                new Period { Name = "M1", Description = "1 minute", ParameterId = "2", DataFormat = "5", MinimumFileSizeBytes = 2 * 1024 },
-                new Period { Name = "M5", Description = "5 minutes", ParameterId = "3", DataFormat = "5", MinimumFileSizeBytes = 2 * 1024 }
+                new Period { Name = "M1", Description = "1 minute", ParameterId = "2", DataFormat = "5", MinimumFileSizeBytes = 500 },
+                new Period { Name = "M5", Description = "5 minutes", ParameterId = "3", DataFormat = "5", MinimumFileSizeBytes = 500 }
             };
         }
 
