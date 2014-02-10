@@ -58,7 +58,7 @@ namespace FinamTicksDownloader
             EmitentHelper.UpdateEmitents();
             Console.WriteLine("OK");
 
-            var ticker = EmitentHelper.EmitentList.Where(x => x.Name == args[0]).FirstOrDefault();
+            var ticker = EmitentHelper.EmitentList.Where(x => x.Name == args[0] && x.Market == 14).FirstOrDefault();
             if(ticker == null)
             {
                 Console.WriteLine("Ticker with name " + args[0] + " not found");
