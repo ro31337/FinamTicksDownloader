@@ -41,6 +41,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DateTimeExtensions.cs" />
     <Compile Include="Emitent.cs" />
     <Compile Include="EmitentHelper.cs" />
     <Compile Include="Period.cs" />

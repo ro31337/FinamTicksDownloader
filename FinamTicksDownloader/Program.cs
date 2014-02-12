@@ -52,7 +52,7 @@ namespace FinamTicksDownloader
 
             DateTime startDate = DateTime.Parse(args[2]);
             DateTime endDate = DateTime.Parse(args[3]);
-            Console.WriteLine("Downloading since " + startDate + " till " + endDate);
+            Console.WriteLine("Downloading since " + startDate.ToDayString() + " till " + endDate.ToDayString());
 
             Console.Write("Loading tickers list...");
             EmitentHelper.UpdateEmitents();
@@ -109,7 +109,7 @@ namespace FinamTicksDownloader
                 if (File.Exists(fileName))
                     File.Delete(fileName);
 
-                Console.WriteLine("Downloading " + currentDate);
+                Console.WriteLine("Downloading " + currentDate.ToDayString());
 
                 try
                 {
@@ -119,7 +119,7 @@ namespace FinamTicksDownloader
 
                     if (size == 0)
                     {
-                        Console.WriteLine("Skipping " + currentDate.ToString());
+                        Console.WriteLine("Skipping " + currentDate.ToDayString());
                         currentDate = currentDate.AddDays(1);
                         Thread.Sleep(5000);
                         continue;
