@@ -2,6 +2,7 @@ FinamTicksDownloader
 ====================
 
 Ticks Downloader for Finam.ru
+Limited to FORTS market only.
 
 Description
 -----------
@@ -15,7 +16,7 @@ Usage
 
 Parameters:
 
-* *ticker* - valid stock or futures ticker (RTS, SBRF, Si, etc.)
+* *ticker* - valid FORTS ticker (RTS, SBRF, Si, etc.)
 * *timeframe* - valid timeframe. Supported timeframes are:
     * M5 - 5 minute timeframe
     * M1 - 1 minute timeframe 
