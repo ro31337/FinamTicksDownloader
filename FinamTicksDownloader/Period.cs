@@ -12,6 +12,5 @@ namespace FinamTicksDownloader
         public string Description { get; set; }
         public string ParameterId { get; set; }
         public string DataFormat { get; set; }
-        public int MinimumFileSizeBytes { get; set; }
     }
 }
