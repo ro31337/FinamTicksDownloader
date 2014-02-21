@@ -17,7 +17,10 @@ namespace FinamTicksDownloader
             {
                 new Period { Name = "ticks", Description = "Tick data", ParameterId = "1", DataFormat = "9" },
                 new Period { Name = "M1", Description = "1 minute", ParameterId = "2", DataFormat = "5" },
-                new Period { Name = "M5", Description = "5 minutes", ParameterId = "3", DataFormat = "5" }
+                new Period { Name = "M5", Description = "5 minutes", ParameterId = "3", DataFormat = "5" },
+                new Period { Name = "M10", Description = "10 minutes", ParameterId = "4", DataFormat = "5" },
+                new Period { Name = "M15", Description = "15 minutes", ParameterId = "5", DataFormat = "5" },
+                new Period { Name = "M30", Description = "30 minutes", ParameterId = "6", DataFormat = "5" }
             };
         }
 
