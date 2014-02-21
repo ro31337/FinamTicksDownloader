@@ -19,6 +19,9 @@ Parameters:
 
 * *ticker* - valid FORTS ticker (RTS, SBRF, Si, etc.)
 * *timeframe* - valid timeframe. Supported timeframes are:
+    * M30 - 30 minutes timeframe 
+    * M15 - 15 minutes timeframe
+    * M10 - 10 minutes timeframe 
     * M5 - 5 minute timeframe
     * M1 - 1 minute timeframe 
     * ticks - tick data
