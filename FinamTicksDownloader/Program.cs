@@ -81,10 +81,12 @@ namespace FinamTicksDownloader
                 endDate.Day
                 );
 
-            DateTime currentDate = startDate;
+            DateTime currentDateFrom = startDate;
 
-            while (currentDate <= endDate)
+            while (currentDateFrom <= endDate)
             {
+                DateTime currentDateTo = getCurrentDateTo(currentDateFrom, period, endDate);
+                
                 WebDownload webClient = new WebDownload(5 * 60 * 1000);
                 webClient.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.31 (KHTML, like Gecko) Chrome/26.0.1410.64 Safari/537.31");
                 webClient.Headers.Add("Referer", "http://www.finam.ru/analysis/profile041CA00007/default.asp");
@@ -94,31 +96,41 @@ namespace FinamTicksDownloader
                 
                 string tempFileName = Path.GetTempPath() + Guid.NewGuid().ToString() + ".txt";
 
-                string chunk = String.Format("{0:D2}{1:D2}{2:D2}",
-                    currentDate.Year % 100,
-                    currentDate.Month,
-                    currentDate.Day);
+                string chunkFrom = String.Format("{0:D2}{1:D2}{2:D2}",
+                    currentDateFrom.Year % 100,
+                    currentDateFrom.Month,
+                    currentDateFrom.Day);
+
+                string chunkTo = String.Format("{0:D2}{1:D2}{2:D2}",
+                    currentDateTo.Year % 100,
+                    currentDateTo.Month,
+                    currentDateTo.Day);
 
                 string url = String.Format(
                     "http://195.128.78.52/{6}_{0}_{0}.txt?" +
-                    "market={8}&em={7}&code={6}&df={1}&mf={2}&yf={3}&dt={1}&mt={2}&yt={3}&p={4}&" +
-                    "f={6}_{0}_{0}&e=.txt&cn={6}&dtf=1&tmf=1&MSOR=0&mstime=on&" +
+                    "market={8}&em={7}&code={6}&df={1}&mf={2}&yf={3}&dt={10}&mt={11}&yt={12}&p={4}&" +
+                    "f={6}_{0}_{9}&e=.txt&cn={6}&dtf=1&tmf=1&MSOR=0&mstime=on&" +
                     "mstimever=1&sep=1&sep2=1&datf={5}",
-                    chunk,
-                    currentDate.Day,
-                    currentDate.Month - 1,
-                    currentDate.Year,
+                    chunkFrom,
+                    currentDateFrom.Day,
+                    currentDateFrom.Month - 1,
+                    currentDateFrom.Year,
                     period.ParameterId,
                     period.DataFormat,
                     ticker.Code,
                     ticker.ID,
-                    ticker.Market
+                    ticker.Market,
+                    chunkTo,
+                    currentDateTo.Day,
+                    currentDateTo.Month - 1,
+                    currentDateTo.Year
                     );
 
                 if (File.Exists(tempFileName))
                     File.Delete(tempFileName);
 
-                Console.WriteLine("Downloading " + currentDate.ToDayString());
+                Console.WriteLine("Downloading from " + currentDateFrom.ToDayString() + " to " +
+                    currentDateTo.ToDayString());
 
                 try
                 {
@@ -128,13 +140,13 @@ namespace FinamTicksDownloader
 
                     if (size == 0)
                     {
-                        Console.WriteLine("Skipping " + currentDate.ToDayString());
-                        currentDate = currentDate.AddDays(1);
+                        Console.WriteLine("Skipping " + currentDateFrom.ToDayString());
+                        currentDateFrom = currentDateFrom.AddDays(period.HowMuchDaysToDownloadAtTime);
                         Thread.Sleep(5000);
                         continue;
                     }
 
-                    if (!fileContainsStockData(currentDate, tempFileName))
+                    if (!fileContainsStockData(tempFileName))
                     {
                         Console.WriteLine("File doesn't contain stock data, trying again (file size: " + size + " bytes)");
                         if (size > 0 && size < 300)
@@ -157,8 +169,17 @@ namespace FinamTicksDownloader
 
                 appendAndDelete(tempFileName, fileName);
 
-                currentDate = currentDate.AddDays(1);
+                currentDateFrom = currentDateFrom.AddDays(period.HowMuchDaysToDownloadAtTime);
             }
+        }
+
+        private static DateTime getCurrentDateTo(DateTime currentDateFrom, Period period, DateTime endDate)
+        {
+            DateTime currentDateTo = currentDateFrom.AddDays(period.HowMuchDaysToDownloadAtTime);
+            if (currentDateTo > endDate)
+                currentDateTo = endDate;
+
+            return currentDateTo;
         }
 
         private static void appendAndDelete(string inputFileName, string outputFileName)
@@ -172,19 +193,16 @@ namespace FinamTicksDownloader
             File.Delete(inputFileName);
         }
 
-        private static bool fileContainsStockData(DateTime currentDate, string filename)
+        private static bool fileContainsStockData(string filename)
         {
-            string str = String.Format("{0:D4}{1:D2}{2:D2},",
-                currentDate.Year,
-                currentDate.Month,
-                currentDate.Day);
-
             using(StreamReader reader = new StreamReader(File.Open(filename, FileMode.Open, FileAccess.Read)))
             {
                 while(!reader.EndOfStream)
                 {
                     string line = reader.ReadLine();
-                    if (line.StartsWith(str))
+                    string[] ss = line.Split(new char[] { ',' });
+
+                    if (ss.Length >= 4)
                         return true;
                 }
             }
