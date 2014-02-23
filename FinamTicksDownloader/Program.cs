@@ -141,7 +141,7 @@ namespace FinamTicksDownloader
                     if (size == 0)
                     {
                         Console.WriteLine("Skipping " + currentDateFrom.ToDayString());
-                        currentDateFrom = currentDateFrom.AddDays(period.HowMuchDaysToDownloadAtTime);
+                        currentDateFrom = currentDateFrom.AddDays(period.HowMuchDaysToDownloadAtTime + 1);
                         Thread.Sleep(5000);
                         continue;
                     }
@@ -169,7 +169,7 @@ namespace FinamTicksDownloader
 
                 appendAndDelete(tempFileName, fileName);
 
-                currentDateFrom = currentDateFrom.AddDays(period.HowMuchDaysToDownloadAtTime);
+                currentDateFrom = currentDateFrom.AddDays(period.HowMuchDaysToDownloadAtTime + 1);
             }
         }
 
