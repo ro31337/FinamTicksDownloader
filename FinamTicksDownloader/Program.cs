@@ -15,12 +15,12 @@ namespace FinamTicksDownloader
         {
             return new List<Period>
             {
-                new Period { Name = "ticks", Description = "Tick data", ParameterId = "1", DataFormat = "9" },
-                new Period { Name = "M1", Description = "1 minute", ParameterId = "2", DataFormat = "5" },
-                new Period { Name = "M5", Description = "5 minutes", ParameterId = "3", DataFormat = "5" },
-                new Period { Name = "M10", Description = "10 minutes", ParameterId = "4", DataFormat = "5" },
-                new Period { Name = "M15", Description = "15 minutes", ParameterId = "5", DataFormat = "5" },
-                new Period { Name = "M30", Description = "30 minutes", ParameterId = "6", DataFormat = "5" }
+                new Period { Name = "ticks", Description = "Tick data", ParameterId = "1", DataFormat = "9", HowMuchDaysToDownloadAtTime = 1 },
+                new Period { Name = "M1", Description = "1 minute", ParameterId = "2", DataFormat = "5", HowMuchDaysToDownloadAtTime = 5 },
+                new Period { Name = "M5", Description = "5 minutes", ParameterId = "3", DataFormat = "5", HowMuchDaysToDownloadAtTime = 7 },
+                new Period { Name = "M10", Description = "10 minutes", ParameterId = "4", DataFormat = "5", HowMuchDaysToDownloadAtTime = 10 },
+                new Period { Name = "M15", Description = "15 minutes", ParameterId = "5", DataFormat = "5", HowMuchDaysToDownloadAtTime = 15 },
+                new Period { Name = "M30", Description = "30 minutes", ParameterId = "6", DataFormat = "5", HowMuchDaysToDownloadAtTime = 30 }
             };
         }
 
@@ -70,6 +70,17 @@ namespace FinamTicksDownloader
 
             Console.WriteLine("Using ticker " + ticker);
 
+            string fileName = String.Format("{0}-{1}-from-{2:D4}-{3:D2}-{4:D2}-to-{5:D4}-{6:D2}-{7:D2}.txt",
+                ticker.Name,
+                period.Name,
+                startDate.Year,
+                startDate.Month,
+                startDate.Day,
+                endDate.Year,
+                endDate.Month,
+                endDate.Day
+                );
+
             DateTime currentDate = startDate;
 
             while (currentDate <= endDate)
@@ -81,12 +92,7 @@ namespace FinamTicksDownloader
                 webClient.Headers.Add("Accept-Language", "en-US,en;q=0.9");
                 webClient.Headers.Add("Accept-Encoding", "gzip, deflate"); 
                 
-                string fileName = String.Format("{3}-{4}-{0:D4}-{1:D2}-{2:D2}.txt",
-                    currentDate.Year,
-                    currentDate.Month,
-                    currentDate.Day,
-                    ticker.Name,
-                    period.Name);
+                string tempFileName = Path.GetTempPath() + Guid.NewGuid().ToString() + ".txt";
 
                 string chunk = String.Format("{0:D2}{1:D2}{2:D2}",
                     currentDate.Year % 100,
@@ -109,15 +115,15 @@ namespace FinamTicksDownloader
                     ticker.Market
                     );
 
-                if (File.Exists(fileName))
-                    File.Delete(fileName);
+                if (File.Exists(tempFileName))
+                    File.Delete(tempFileName);
 
                 Console.WriteLine("Downloading " + currentDate.ToDayString());
 
                 try
                 {
-                    webClient.DownloadFile(url, fileName);
-                    long size = new FileInfo(fileName).Length;
+                    webClient.DownloadFile(url, tempFileName);
+                    long size = new FileInfo(tempFileName).Length;
                     Console.WriteLine("Downloaded " + size + " bytes");
 
                     if (size == 0)
@@ -128,13 +134,13 @@ namespace FinamTicksDownloader
                         continue;
                     }
 
-                    if (!fileContainsStockData(currentDate, fileName))
+                    if (!fileContainsStockData(currentDate, tempFileName))
                     {
                         Console.WriteLine("File doesn't contain stock data, trying again (file size: " + size + " bytes)");
                         if (size > 0 && size < 300)
                         {
                             Console.WriteLine("Message: ");
-                            Console.WriteLine(File.ReadAllText(fileName, Encoding.GetEncoding(1251)));
+                            Console.WriteLine(File.ReadAllText(tempFileName, Encoding.GetEncoding(1251)));
                         }
                         Thread.Sleep(5 * 1000);
                         continue;
@@ -148,8 +154,22 @@ namespace FinamTicksDownloader
                     Thread.Sleep(5 * 1000);
                     continue;
                 }
+
+                appendAndDelete(tempFileName, fileName);
+
                 currentDate = currentDate.AddDays(1);
             }
+        }
+
+        private static void appendAndDelete(string inputFileName, string outputFileName)
+        {
+            using (Stream input = File.OpenRead(inputFileName))
+            using (Stream output = new FileStream(outputFileName, FileMode.Append,
+                                                  FileAccess.Write, FileShare.None))
+            {
+                input.CopyTo(output);
+            }
+            File.Delete(inputFileName);
         }
 
         private static bool fileContainsStockData(DateTime currentDate, string filename)
