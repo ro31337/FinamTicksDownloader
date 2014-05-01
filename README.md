@@ -35,11 +35,6 @@ Example 1:
 
 Will download 5 minute candle series for RTS ticker since 1 January till 31 December 2013.
 
-FAQ
----
-Q: How can I merge all of .txt files into one?
-
-A: Put a file named "*!all-to-one.bat*" to directory with .txt files. Run the bat-file, output result will be placed to "*!data.txt*". 
 
 Like it?
 --------
